@@ -51,7 +51,9 @@ add_definitions(
 )
 
 add_executable(rocket
-    rocket/main.cpp
+		rocket/main.cpp
+		rocket/controls.cpp
+		rocket/shader.cpp
 )
 
 target_link_libraries(rocket
@@ -64,14 +66,3 @@ create_target_launcher(rocket WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/roc
 
 SOURCE_GROUP(common REGULAR_EXPRESSION ".*/common/.*" )
 SOURCE_GROUP(shaders REGULAR_EXPRESSION ".*/.*shader$" )
-
-if (NOT ${CMAKE_GENERATOR} MATCHES "Xcode" )
-add_custom_command(
-   TARGET rocket POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/rocket${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/tutorial01_first_window/"
-)
-
-elseif (${CMAKE_GENERATOR} MATCHES "Xcode" )
-
-endif (NOT ${CMAKE_GENERATOR} MATCHES "Xcode" )
-
