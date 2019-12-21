@@ -76,9 +76,16 @@ int main(void) {
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
 
-  GLuint programID = LoadShaders("TransformVertexShader.vertexshader",
-                                 "ColorFragmentShader.fragmentshader");
+  //GLuint programID = LoadShaders("TransformVertexShader.vertexshader",
+  //                               "ColorFragmentShader.fragmentshader");
+  GLuint programID = LoadShaders("StandardShading.vertexshader",
+                                 "StandardShading.fragmentshader");
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+  GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
+  GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+
+  glUseProgram(programID);
+  GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
   graphic_object ground_object(ground, 18 * sizeof(GLfloat), ground_color,
                                18 * sizeof(GLfloat), 6);
@@ -115,7 +122,7 @@ int main(void) {
   double move_x = 0.0;
   double move_y = 0.0;
   double move_z = 0.0;
-
+  
   do {
     cur_time = glfwGetTime();
     double delta = cur_time - last_time;
@@ -133,6 +140,15 @@ int main(void) {
     glm::mat4 ViewMatrix = getViewMatrix();
     glm::mat4 ModelMatrix = glm::mat4(1.0);
     glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+    
+		// Send our transformation to the currently bound shader, 
+		// in the "MVP" uniform
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+    
+		glm::vec3 lightPos = glm::vec3(4,4,4);
+		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
     //
     //  Draw Ground
@@ -167,6 +183,8 @@ int main(void) {
       if (!isUnfoldedParachute) {
         if (rotate < pi - 0.2)
           rotate += delta / pi;
+        else
+          isSafeToUnfold = false;
 
         if (sin(rotate) >= 0)
           move_y = power * sin(rotate);
