@@ -83,36 +83,43 @@ int main(void) {
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
   GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
   GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+  GLuint TransitionMatrixID = glGetUniformLocation(programID, "T");
 
   glUseProgram(programID);
   GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
   graphic_object ground_object(ground, 18 * sizeof(GLfloat), ground_color,
-                               18 * sizeof(GLfloat), 6);
+                               18 * sizeof(GLfloat), ground_n, 6);
   graphic_object cloud_object(cloud, 18 * sizeof(GLfloat), cloud_color,
-                              18 * sizeof(GLfloat), 6);
+                              18 * sizeof(GLfloat), cloud_n, 6);
   graphic_object tree_trunk_object(tree_trunk, 36 * 18 * sizeof(GLfloat),
                                    tree_trunk_color,
-                                   36 * 6 * 3 * sizeof(GLfloat), 36 * 18);
+                                   36 * 6 * 3 * sizeof(GLfloat), tree_trunk_n, 36 * 18);
+  graphic_object tree_leaf_object(tree_leaf, 36 * 9 * sizeof(GLfloat),
+                                  tree_leaf_color,
+                                  36 * 9 * sizeof(GLfloat), tree_leaf_n, 36 * 9);
+  graphic_object tree_leaf2_object(tree_leaf2, 36 * 9 * sizeof(GLfloat),
+                                   tree_leaf2_color,
+                                   36 * 9 * sizeof(GLfloat), tree_leaf2_n, 36 * 9);
 
   graphic_object rocket_body_object(rocket_body, 36 * 18 * sizeof(GLfloat),
                                     rocket_body_color,
-                                    36 * 6 * 3 * sizeof(GLfloat), 36 * 18);
+                                    36 * 6 * 3 * sizeof(GLfloat), rocket_body_n, 36 * 18);
   graphic_object rocket_side_object(rocket_side, 18 * sizeof(GLfloat),
-                                    rocket_side_color, 18 * sizeof(GLfloat), 6);
+                                    rocket_side_color, 18 * sizeof(GLfloat), rocket_side_n, 6);
   graphic_object rocket_head_object(rocket_head, 36 * 9 * sizeof(GLfloat),
-                                    rocket_head_color, 36 * 9 * sizeof(GLfloat),
+                                    rocket_head_color, 36 * 9 * sizeof(GLfloat), rocket_head_n,
                                     36 * 9);
   graphic_object rocket_bottom_object(rocket_bottom, 36 * 9 * sizeof(GLfloat),
                                       rocket_bottom_color,
-                                      36 * 9 * sizeof(GLfloat), 36 * 9);
+                                      36 * 9 * sizeof(GLfloat), rocket_bottom_n, 36 * 9);
 
   graphic_object parachute_object(parachute, 9 * 8 * sizeof(GLfloat),
-                                  parachute_color, 9 * 8 * sizeof(GLfloat),
+                                  parachute_color, 9 * 8 * sizeof(GLfloat), parachute_n,
                                   3 * 8);
   graphic_object parachute_line_object(
       (GLfloat *)parachute_line, sizeof(parachute_line),
-      (GLfloat *)parachute_line_color, 16 * 3 * sizeof(GLfloat), 2 * 8,
+      (GLfloat *)parachute_line_color, 16 * 3 * sizeof(GLfloat), nullptr, 2 * 8,
       GL_LINES);
 
   double last_time = 0.0;
@@ -122,7 +129,7 @@ int main(void) {
   double move_x = 0.0;
   double move_y = 0.0;
   double move_z = 0.0;
-  
+
   do {
     cur_time = glfwGetTime();
     double delta = cur_time - last_time;
@@ -147,12 +154,13 @@ int main(void) {
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
     
-		glm::vec3 lightPos = glm::vec3(4,4,4);
+		glm::vec3 lightPos = glm::vec3(5+move_x,8,5+move_z);
 		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
     //
     //  Draw Ground
     //
+		glUniformMatrix4fv(TransitionMatrixID, 1, GL_FALSE, &(ModelMatrix)[0][0]);
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
     ground_object.draw();
 
@@ -160,6 +168,7 @@ int main(void) {
     //  Draw Cloud
     //
     for (auto pos : cloud_pos) {
+      glUniformMatrix4fv(TransitionMatrixID, 1, GL_FALSE, &(pos)[0][0]);
       glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(MVP * pos)[0][0]);
       cloud_object.draw();
     }
@@ -167,9 +176,13 @@ int main(void) {
     //
     //  Draw Tree
     //
-    auto t1 = translate(mat4(), glm::vec3(5, 0, 0));
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(MVP * t1)[0][0]);
-    tree_trunk_object.draw();
+    for (auto pos : tree_pos) {
+      glUniformMatrix4fv(TransitionMatrixID, 1, GL_FALSE, &(translate(mat4(), pos))[0][0]);
+      glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(MVP * translate(mat4(), pos))[0][0]);
+      tree_trunk_object.draw();
+      tree_leaf_object.draw();
+      tree_leaf2_object.draw();
+    }
 
     //
     //  Draw Rocket
@@ -205,6 +218,7 @@ int main(void) {
     }
 
     auto rocket_tt = MVP * rocket_trans * rocket_rotate;
+    glUniformMatrix4fv(TransitionMatrixID, 1, GL_FALSE, &(rocket_trans * rocket_rotate)[0][0]);
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &rocket_tt[0][0]);
     rocket_body_object.draw();
     rocket_side_object.draw();

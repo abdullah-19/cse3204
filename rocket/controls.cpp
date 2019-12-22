@@ -21,11 +21,11 @@ glm::mat4 getProjectionMatrix() { return ProjectionMatrix; }
 #include <iostream>
 
 // Initial position : on +Z
-glm::vec3 position = glm::vec3(5, 5, 10);
+glm::vec3 position = glm::vec3(3.24051, 21.8051, 44.0524);
 // Initial horizontal angle : toward -Z
-float horizontalAngle = 3.14f;
+float horizontalAngle = 3.029f;
 // Initial vertical angle : none
-float verticalAngle = 0.0f;
+float verticalAngle = -0.321f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
@@ -91,6 +91,12 @@ void computeMatricesFromInputs() {
       power += 0.1f;
     std::cout << power << '\n';
   }
+  // Debug Info
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    std::cout << "pos: " << position.x << ' ' << position.y << ' ' << position.z << '\n';
+    std::cout << "ha: " << horizontalAngle << '\n';
+    std::cout << "va: " << verticalAngle << '\n';
+  }
   // Launcing!
   if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
     if (power > 16.f) {
@@ -106,6 +112,12 @@ void computeMatricesFromInputs() {
     } else if (power >= 32.f) {
       std::cout << "Cannot unfold parachute!\n";
     }
+  }
+  // Reset Camera
+  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+    position = glm::vec3(3.24051, 21.8051, 44.0524);
+    horizontalAngle = 3.029f;
+    verticalAngle = -0.321f;
   }
 
   float FoV =
