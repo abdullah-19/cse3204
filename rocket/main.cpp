@@ -76,10 +76,10 @@ int main(void) {
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
 
-  //GLuint programID = LoadShaders("TransformVertexShader.vertexshader",
-  //                               "ColorFragmentShader.fragmentshader");
-  GLuint programID = LoadShaders("StandardShading.vertexshader",
-                                 "StandardShading.fragmentshader");
+  GLuint programID = LoadShaders("TransformVertexShader.vertexshader",
+                                 "ColorFragmentShader.fragmentshader");
+  //GLuint programID = LoadShaders("StandardShading.vertexshader",
+  //                               "StandardShading.fragmentshader");
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
   GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
   GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
